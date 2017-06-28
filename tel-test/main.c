@@ -27,15 +27,16 @@ void tninit (void);
 
 void
 dataArrivedHandler (void) {
-  int data_count = ring_full_count (&netiring);
+	int idx = 0;
+	int data_count = ring_full_count (&netiring);
 
-  printf ("\nGOT DATA (%d)\n", data_count);
-  printf ("\n Input: ");
-  for (int idx = 0; idx < data_count; idx++) {
-    printf ("%c", netiring.consume[idx] & 0xff);
-  } printf ("\n");
+	printf ("\nGOT DATA (%d)\n", data_count);
+	printf ("\n Input: ");
+	for (idx = 0; idx < data_count; idx++) {
+		printf ("%c", netiring.consume[idx] & 0xff);
+	} printf ("\n");
 
-  ring_consumed (&netiring, data_count);
+	ring_consumed (&netiring, data_count);
 }
 
 int
@@ -81,12 +82,12 @@ main (int argc, char *argv[]) {
 	printf ("# Debug INFO - Connected to (%s)\n", buf);
 	
 	sys_telnet_init ();
-  set_terminal_enabled (FALSE);
-  set_data_arrived_handler (dataArrivedHandler);
-  printf ("# Debug INFO - Starting Telnet\n");
-	for (;;) {
-		telnet("");
-	}
+	set_terminal_enabled (FALSE);
+	set_data_arrived_handler (dataArrivedHandler);
+	printf ("# Debug INFO - Starting Telnet\n");
+	
+	telnet ("");
+	quit ();
 	
 	return 0;
 }

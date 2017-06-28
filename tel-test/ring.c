@@ -252,22 +252,15 @@ ring_empty_consecutive (Ring * ring)
  */
 
 int
-ring_full_count (Ring * ring)
-{
-  if ((ring->mark == 0) || (ring->mark == ring->consume))
-    {
-      if (ring_full (ring))
-	{
-	  return ring->size;	/* nothing consumed, but full */
-	}
-      else
-	{
-	  return ring_subtract (ring, ring->supply, ring->consume);
-	}
-    }
-  else
-    {
-      return ring_subtract (ring, ring->mark, ring->consume);
+ring_full_count (Ring * ring) {
+	if ((ring->mark == 0) || (ring->mark == ring->consume)) {
+		if (ring_full (ring)) {
+			return ring->size;	/* nothing consumed, but full */
+		} else {
+			return ring_subtract (ring, ring->supply, ring->consume);
+		}
+    } else {
+		return ring_subtract (ring, ring->mark, ring->consume);
     }
 }
 
@@ -276,29 +269,19 @@ ring_full_count (Ring * ring)
  * However, don't return more than enough to cross over set mark.
  */
 int
-ring_full_consecutive (Ring * ring)
-{
-  if ((ring->mark == 0) || (ring->mark == ring->consume))
-    {
-      if ((ring->supply < ring->consume) || ring_full (ring))
-	{
-	  return ring_subtract (ring, ring->top, ring->consume);
-	}
-      else
-	{
-	  return ring_subtract (ring, ring->supply, ring->consume);
-	}
-    }
-  else
-    {
-      if (ring->mark < ring->consume)
-	{
-	  return ring_subtract (ring, ring->top, ring->consume);
-	}
-      else
-	{			/* Else, distance to mark */
-	  return ring_subtract (ring, ring->mark, ring->consume);
-	}
+ring_full_consecutive (Ring * ring) {
+	if ((ring->mark == 0) || (ring->mark == ring->consume)) {
+		if ((ring->supply < ring->consume) || ring_full (ring)) {
+			return ring_subtract (ring, ring->top, ring->consume);
+		} else {
+			return ring_subtract (ring, ring->supply, ring->consume);
+		}
+    } else {
+		if (ring->mark < ring->consume) {
+			return ring_subtract (ring, ring->top, ring->consume);
+		} else {			/* Else, distance to mark */
+			return ring_subtract (ring, ring->mark, ring->consume);
+		}
     }
 }
 

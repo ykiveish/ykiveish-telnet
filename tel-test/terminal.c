@@ -59,7 +59,7 @@
 #include "externs.h"
 #include "types.h"
 
-Ring ttyoring, ttyiring;
+// Ring ttyoring, ttyiring;
 unsigned char ttyobuf[2 * BUFSIZ], ttyibuf[BUFSIZ];
 
 int termdata;			/* Debugging flag */
@@ -107,7 +107,7 @@ cc_t termAytChar;
 void
 init_terminal (void)
 {
-  if (ring_init (&ttyoring, ttyobuf, sizeof ttyobuf) != 1)
+  /*if (ring_init (&ttyoring, ttyobuf, sizeof ttyobuf) != 1)
     {
       exit (EXIT_FAILURE);
     }
@@ -115,7 +115,7 @@ init_terminal (void)
     {
       exit (EXIT_FAILURE);
     }
-  autoflush = TerminalAutoFlush ();
+  autoflush = TerminalAutoFlush ();*/
 }
 
 
@@ -131,53 +131,53 @@ init_terminal (void)
 
 
 int
-ttyflush (int drop)
-{
-  register int n, n0, n1;
+ttyflush (int drop) {
+	/*
+	register int n, n0, n1;
 
-  n0 = ring_full_count (&ttyoring);
-  if ((n1 = n = ring_full_consecutive (&ttyoring)) > 0)
-    {
-      if (drop)
-	{
-	  TerminalFlushOutput ();
-	  /* we leave 'n' alone! */
-	}
-      else
-	{
-	  n = TerminalWrite ((char *) ttyoring.consume, n);
-	}
+	n0 = ring_full_count (&ttyoring);
+	if ((n1 = n = ring_full_consecutive (&ttyoring)) > 0) {
+		if (drop) {
+			TerminalFlushOutput ();
+			// we leave 'n' alone!
+		} else {
+			n = TerminalWrite ((char *) ttyoring.consume, n);
+		}
     }
-  if (n > 0)
-    {
-      if (termdata && n)
-	{
-	  Dump ('>', ttyoring.consume, n);
-	}
-      /*
-       * If we wrote everything, and the full count is
-       * larger than what we wrote, then write the
-       * rest of the buffer.
-       */
-      if (n1 == n && n0 > n)
-	{
-	  n1 = n0 - n;
-	  if (!drop)
-	    n1 = TerminalWrite ((char *) ttyoring.bottom, n1);
-	  if (n1 > 0)
-	    n += n1;
-	}
-      ring_consumed (&ttyoring, n);
+	
+	if (n > 0) {
+		if (termdata && n) {
+			Dump ('>', ttyoring.consume, n);
+		}
+      
+       //* If we wrote everything, and the full count is
+       //* larger than what we wrote, then write the
+       //* rest of the buffer.
+      
+		if (n1 == n && n0 > n) {
+			n1 = n0 - n;
+			if (!drop)
+				n1 = TerminalWrite ((char *) ttyoring.bottom, n1);
+			if (n1 > 0)
+				n += n1;
+		}
+    
+		ring_consumed (&ttyoring, n);
     }
-  if (n < 0)
-    return -1;
-  if (n == n0)
-    {
-      if (n0)
-	return -1;
-      return 0;
+	
+	if (n < 0)
+		return -1;
+	if (n == n0) {
+		if (n0)
+			return -1;
+		return 0;
     }
-  return n0 - n + 1;
+	
+	return n0 - n + 1;
+	*/
+	
+	// ring_consumed (&ttyoring, ring_full_count (&ttyoring));
+	return 0;
 }
 
 /*

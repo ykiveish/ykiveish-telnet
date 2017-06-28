@@ -475,7 +475,7 @@ extern cc_t termAytChar;
 
 /* Ring buffer structures which are shared */
 
-extern Ring netoring, netiring, ttyoring, ttyiring;
+extern Ring netoring, netiring; //, ttyoring, ttyiring;
 extern char data_arrived;
 extern unsigned char network_data_arrived;
 extern unsigned char is_terminal_enabled;

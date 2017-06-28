@@ -64,8 +64,8 @@
 				*ttyoring.supply = c; \
 				ring_supplied(&ttyoring, 1); \
 			}
-#define TTYBYTES()	(ring_full_count(&ttyoring))
-#define TTYROOM()	(ring_empty_count(&ttyoring))
+//#define TTYBYTES()	(ring_full_count(&ttyoring))
+//#define TTYROOM()	(ring_empty_count(&ttyoring))
 
 /*	Various modes */
 #define MODE_LOCAL_CHARS(m)	((m)&(MODE_EDIT|MODE_TRAPSIG))

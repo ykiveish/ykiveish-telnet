@@ -1821,7 +1821,7 @@ telrcv (void) {
 	  		if (c == '\0') {
       			break;		/* Ignore \0 after CR */
 	    	} else if ((c == '\n') && my_want_state_is_dont (TELOPT_ECHO) && !crmod) {
-	      		TTYADD (c);
+	      		// TTYADD (c); // ykiveish
 	      		break;
 	    	}
 	  		/* Else, fall through */
@@ -1867,32 +1867,32 @@ telrcv (void) {
 		      			sbp++, scc--;
 		      			count++;
 					      	/* a "true" CR */
-					    	TTYADD ('\r');
+					    	// TTYADD ('\r'); // ykiveish
 		    		}
 		 			else if (my_want_state_is_dont (TELOPT_ECHO) && (c == '\n')) {
 		      			sbp++, scc--;
 		      			count++;
-		      			TTYADD ('\n');
+		      			// TTYADD ('\n'); // ykiveish
 		    		} else {
 #ifdef	ENCRYPTION
 		    			if (decrypt_input)
 							(*decrypt_input) (-1);
 #endif /* ENCRYPTION */
 
-		      			TTYADD ('\r');
+		      			// TTYADD ('\r'); // ykiveish
 		      			if (crmod) {
-		      				TTYADD ('\n');
+		      				// TTYADD ('\n'); // ykiveish
 						}
 		    		}
 				} else {
 			  		telrcv_state = TS_CR;
-			  		TTYADD ('\r');
+			  		// TTYADD ('\r'); // ykiveish
 			  		if (crmod) {
-			      		TTYADD ('\n');
+			      		// TTYADD ('\n'); // ykiveish
 			    	}
 				}
 			} else {
-	      		TTYADD (c);
+	      		// TTYADD (c); // ykiveish
 	      		// printf ("%c", c);
 	  		}
 
@@ -1956,12 +1956,12 @@ telrcv (void) {
 
 	    		case IAC:
 #if !defined TN3270
-	      			TTYADD (IAC);
+	      			// TTYADD (IAC); // ykiveish
 #else /* !defined(TN3270) */
 	      			if (In3270) {
 		  				*Ifrontp++ = IAC;
 					} else {
-		  				TTYADD (IAC);
+		  				// TTYADD (IAC); // ykiveish
 					}
 #endif /* !defined(TN3270) */
 	      			break;
@@ -2060,9 +2060,9 @@ telrcv (void) {
 	    	}
 		}
     }
-  	if (count) {
+  	/*if (count) {
     	ring_consumed (&netiring, count);
-  	}
+  	}*/ // ykiveish
 
   	return returnValue || count;
 }
@@ -2083,182 +2083,201 @@ rlogin_susp (void)
 }
 
 static int
+telapisnd (void) {
+	/*int tcc;
+	int count;
+	int returnValue = 0;
+	unsigned char *tbp;
+
+	tcc = 0;
+	count = 0;
+	
+	while (1) {
+		register int sc;
+		register int c;
+		if (my_want_state_is_wont (TELOPT_BINARY)) {
+			switch (c) {
+				case '\n':
+					if (MODE_LOCAL_CHARS (globalmode)) {
+						NETADD ('\r');
+					}
+					NETADD ('\n');
+				break;
+				case '\r':
+					if (!crlf) {
+						NET2ADD ('\r', '\0');
+					} else {
+						NET2ADD ('\r', '\n');
+					}
+				break;
+				case IAC:
+					NET2ADD (IAC, IAC);
+				break;
+				default:
+					NETADD (c);
+				break;
+			}
+		} else if (c == IAC) {
+			NET2ADD (IAC, IAC);
+		} else {
+			NETADD (c);
+		}
+    }
+	
+	if (count)
+		ring_consumed (&ttyiring, count);
+	
+	return returnValue || count;*/
+	return 0;
+}
+
+static int
 telsnd (void)
 {
-  int tcc;
-  int count;
-  int returnValue = 0;
-  unsigned char *tbp;
+	int tcc;
+	int count;
+	int returnValue = 0;
+	unsigned char *tbp;
 
-  tcc = 0;
-  count = 0;
-  while (NETROOM () > 2)
-    {
-      register int sc;
-      register int c;
+	tcc = 0;
+	count = 0;
+	while (NETROOM () > 2) {
+		register int sc;
+		register int c;
 
-      if (tcc == 0)
-	{
-	  if (count)
-	    {
-	      ring_consumed (&ttyiring, count);
-	      returnValue = 1;
-	      count = 0;
-	    }
-	  tbp = ttyiring.consume;
-	  tcc = ring_full_consecutive (&ttyiring);
-	  if (tcc == 0)
-	    {
-	      break;
-	    }
-	}
-      c = *tbp++ & 0xff, sc = strip (c), tcc--;
-      count++;
-      if (rlogin != _POSIX_VDISABLE)
-	{
-	  if (bol)
-	    {
-	      bol = 0;
-	      if (sc == rlogin)
-		{
-		  local = 1;
-		  continue;
+		if (tcc == 0) {
+			if (count) {
+				ring_consumed (&ttyiring, count);
+				returnValue = 1;
+				count = 0;
+			}
+			
+			tbp = ttyiring.consume;
+			tcc = ring_full_consecutive (&ttyiring);
+			if (tcc == 0) {
+				break;
+			}
 		}
-	    }
-	  else if (local)
-	    {
-	      local = 0;
-	      if (sc == '.' || c == termEofChar)
-		{
-		  bol = 1;
-		  command (0, "close\n", 6);
-		  continue;
-		}
-	      if (sc == termSuspChar)
-		{
-		  bol = 1;
-		  command (0, "z\n", 2);
-		  continue;
-		}
-	      if (sc == escape)
-		{
-		  command (0, (char *) tbp, tcc);
-		  bol = 1;
-		  count += tcc;
-		  tcc = 0;
-		  flushline = 1;
-		  break;
-		}
-	      if (sc != rlogin)
-		{
-		  ++tcc;
-		  --tbp;
-		  --count;
-		  c = sc = rlogin;
-		}
-	    }
-	  if ((sc == '\n') || (sc == '\r'))
-	    bol = 1;
-	}
-      else if (sc == escape)
-	{
-	  /*
-	   * Double escape is a pass through of a single escape character.
-	   */
-	  if (tcc && strip (*tbp) == escape)
-	    {
-	      tbp++;
-	      tcc--;
-	      count++;
-	      bol = 0;
-	    }
-	  else
-	    {
-	      command (0, (char *) tbp, tcc);
-	      bol = 1;
-	      count += tcc;
-	      tcc = 0;
-	      flushline = 1;
-	      break;
-	    }
-	}
-      else
-	bol = 0;
+		
+		c = *tbp++ & 0xff, sc = strip (c), tcc--;
+		count++;
+		if (rlogin != _POSIX_VDISABLE) {
+			if (bol) {
+				bol = 0;
+				if (sc == rlogin) {
+					local = 1;
+					continue;
+				}
+			} else if (local) {
+				local = 0;
+				if (sc == '.' || c == termEofChar) {
+					bol = 1;
+					command (0, "close\n", 6);
+					continue;
+				}
+				if (sc == termSuspChar) {
+					bol = 1;
+					command (0, "z\n", 2);
+					continue;
+				}
+				if (sc == escape) {
+					command (0, (char *) tbp, tcc);
+					bol = 1;
+					count += tcc;
+					tcc = 0;
+					flushline = 1;
+					break;
+				}
+				if (sc != rlogin) {
+					++tcc;
+					--tbp;
+					--count;
+					c = sc = rlogin;
+				}
+			}
+			if ((sc == '\n') || (sc == '\r'))
+				bol = 1;
+		} else if (sc == escape) {
+		  /*
+		   * Double escape is a pass through of a single escape character.
+		   */
+			if (tcc && strip (*tbp) == escape) {
+				tbp++;
+				tcc--;
+				count++;
+				bol = 0;
+			} else {
+				command (0, (char *) tbp, tcc);
+				bol = 1;
+				count += tcc;
+				tcc = 0;
+				flushline = 1;
+				break;
+			}
+		} else
+			bol = 0;
 #ifdef	KLUDGELINEMODE
-      if (kludgelinemode && (globalmode & MODE_EDIT) && (sc == echoc))
-	{
-	  if (tcc > 0 && strip (*tbp) == echoc)
-	    {
-	      tcc--;
-	      tbp++;
-	      count++;
-	    }
-	  else
-	    {
-	      dontlecho = !dontlecho;
-	      settimer (echotoggle);
-	      setconnmode (0);
-	      flushline = 1;
-	      break;
-	    }
-	}
+		if (kludgelinemode && (globalmode & MODE_EDIT) && (sc == echoc)) {
+			if (tcc > 0 && strip (*tbp) == echoc) {
+				tcc--;
+				tbp++;
+				count++;
+			} else {
+				dontlecho = !dontlecho;
+				settimer (echotoggle);
+				setconnmode (0);
+				flushline = 1;
+				break;
+			}
+		}
 #endif
-      if (MODE_LOCAL_CHARS (globalmode))
-	{
-	  if (TerminalSpecialChars (sc) == 0)
-	    {
-	      bol = 1;
-	      break;
-	    }
-	}
-      if (my_want_state_is_wont (TELOPT_BINARY))
-	{
-	  switch (c)
-	    {
-	    case '\n':
-	      /*
-	       * If we are in CRMOD mode (\r ==> \n)
-	       * on our local machine, then probably
-	       * a newline (unix) is CRLF (TELNET).
-	       */
-	      if (MODE_LOCAL_CHARS (globalmode))
-		{
-		  NETADD ('\r');
+		if (MODE_LOCAL_CHARS (globalmode)) {
+			if (TerminalSpecialChars (sc) == 0) {
+				bol = 1;
+				break;
+			}
 		}
-	      NETADD ('\n');
-	      bol = flushline = 1;
-	      break;
-	    case '\r':
-	      if (!crlf)
-		{
-		  NET2ADD ('\r', '\0');
+		
+		if (my_want_state_is_wont (TELOPT_BINARY)) {
+			switch (c) {
+				case '\n':
+				  /*
+				   * If we are in CRMOD mode (\r ==> \n)
+				   * on our local machine, then probably
+				   * a newline (unix) is CRLF (TELNET).
+				   */
+					if (MODE_LOCAL_CHARS (globalmode)) {
+						NETADD ('\r');
+					}
+					NETADD ('\n');
+					bol = flushline = 1;
+				break;
+				case '\r':
+					if (!crlf) {
+						NET2ADD ('\r', '\0');
+					} else {
+						NET2ADD ('\r', '\n');
+					}
+					bol = flushline = 1;
+				break;
+				case IAC:
+					NET2ADD (IAC, IAC);
+				break;
+				default:
+					NETADD (c);
+				break;
+			}
+		} else if (c == IAC) {
+			NET2ADD (IAC, IAC);
+		} else {
+			NETADD (c);
 		}
-	      else
-		{
-		  NET2ADD ('\r', '\n');
-		}
-	      bol = flushline = 1;
-	      break;
-	    case IAC:
-	      NET2ADD (IAC, IAC);
-	      break;
-	    default:
-	      NETADD (c);
-	      break;
-	    }
-	}
-      else if (c == IAC)
-	{
-	  NET2ADD (IAC, IAC);
-	}
-      else
-	{
-	  NETADD (c);
-	}
     }
-  if (count)
-    ring_consumed (&ttyiring, count);
-  return returnValue || count;	/* Non-zero if we did anything */
+	
+	/*if (count)
+		ring_consumed (&ttyiring, count);*/ // ykiveish
+	
+	return returnValue || count;	/* Non-zero if we did anything */
 }
 
 /*
@@ -2289,13 +2308,15 @@ Scheduler (int block) {
 		&& (!kludgelinemode || my_want_state_is_do (TELOPT_SGA))
 #endif
 		) || my_want_state_is_will (TELOPT_BINARY));
-	ttyout = ring_full_count (&ttyoring);
+	// ttyout = ring_full_count (&ttyoring); // ykiveish
+	ttyout = 0;
 
 #if defined TN3270
-	ttyin = ring_empty_count (&ttyiring) && (shell_active == 0);
+	// ttyin = ring_empty_count (&ttyiring) && (shell_active == 0); // ykiveish
 #else /* defined(TN3270) */
-	ttyin = ring_empty_count (&ttyiring);
+	// ttyin = ring_empty_count (&ttyiring); // ykiveish
 #endif /* defined(TN3270) */
+	ttyin = 0;
 
 #if defined TN3270
 	netin = ring_empty_count (&netiring);
@@ -2317,30 +2338,17 @@ Scheduler (int block) {
 	returnValue = process_rings (netin, netout, netex, ttyin, ttyout, !block);
 	/* Now, look at the input rings, looking for work to do. */
 
-	if (ring_full_count (&ttyiring)) {
-#if defined TN3270
-		if (In3270) {
-			int c;
-			c = DataFromTerminal (ttyiring.consume, ring_full_consecutive (&ttyiring));
-			if (c) {
-				returnValue = 1;
-				ring_consumed (&ttyiring, c);
-			}
-		} else {
-#endif /* defined(TN3270) */
-			returnValue |= telsnd ();
-#if defined TN3270
-		}
-#endif /* defined(TN3270) */
-    }
+	if (returnValue == -1) {
+		printf ("DEBUG Info - process_rings (-1)\n");
+	}
+	
+	// returnValue |= telapisnd ();
+	/*if (ring_full_count (&ttyiring)) {
+		returnValue |= telsnd ();
+    }*/ //ykiveish
 
 	if (ring_full_count (&netiring)) {
-#if !defined TN3270
-
 		returnValue |= telrcv ();
-#else /* !defined(TN3270) */
-		returnValue = Push3270 ();
-#endif /* !defined(TN3270) */
 	}
 
 	/*
@@ -2352,6 +2360,10 @@ Scheduler (int block) {
     	}
     }
     */
+	
+	if (returnValue == -1) {
+		printf ("DEBUG Info - (-1)\n");
+	}
 	
 	return returnValue;
 }
@@ -2474,7 +2486,7 @@ telnet (char *user) {
 		/* If there is data waiting to go out to terminal, don't
 		* schedule any more data for the terminal.
 		*/
-		if (ring_full_count (&ttyoring)) {
+		/*if (ring_full_count (&ttyoring)) {
 			schedValue = 1;
 		} else {
 			if (shell_active) {
@@ -2491,7 +2503,7 @@ telnet (char *user) {
 				setcommandmode ();
 				return;
 			}
-		}	
+		}*/
     }
 #endif /* !defined(TN3270) */
 }

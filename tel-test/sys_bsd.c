@@ -1244,11 +1244,11 @@ process_rings (int netin, int netout, int netex, int ttyin, int ttyout, int poll
 #else /* !defined(SO_OOBINLINE) */
 
 		c = recv (net, (char *) netiring.supply, canread, 0);
-		/*printf ("\n[");
+		printf ("\n[");
 		for (idx = 0; idx < c; idx++) {
 			printf ("%c", netiring.supply[idx]);
 		}
-		printf ("]\n");*/
+		printf ("]\n");
 		
 #endif /* !defined(SO_OOBINLINE) */
 
@@ -1272,7 +1272,8 @@ process_rings (int netin, int netout, int netex, int ttyin, int ttyout, int poll
 	/*
 	 * Something to read from the tty...
 	 */
-	if (FD_ISSET (tin, &ibits)) {
+	// ykiveish
+	/*if (FD_ISSET (tin, &ibits)) {
 		FD_CLR (tin, &ibits);
 		c = TerminalRead ((char *)ttyiring.supply, ring_empty_consecutive (&ttyiring));
 		if (c < 0 && errno == EIO) {
@@ -1282,9 +1283,9 @@ process_rings (int netin, int netout, int netex, int ttyin, int ttyout, int poll
 		if (c < 0 && errno == EWOULDBLOCK) {
 			c = 0;
 		} else {
-		/* EOF detection for line mode!!!! */
+		//* EOF detection for line mode!!!! 
 		if ((c == 0) && MODE_LOCAL_CHARS (globalmode) && isatty (tin)) {
-			/* must be an EOF... */
+			//* must be an EOF...
 			*ttyiring.supply = termEofChar;
 			c = 1;
 	    }
@@ -1299,18 +1300,18 @@ process_rings (int netin, int netout, int netex, int ttyin, int ttyout, int poll
 		
 		ring_supplied (&ttyiring, c);
 	}
-		returnValue = 1;		/* did something useful */
-    }
+		returnValue = 1;		//* did something useful
+    }*/
 
 	if (FD_ISSET (net, &obits)) {
       FD_CLR (net, &obits);
       returnValue |= netflush ();
     }
 	
-	if (FD_ISSET (tout, &obits)) {
+	/*if (FD_ISSET (tout, &obits)) {
       FD_CLR (tout, &obits);
       returnValue |= (ttyflush (SYNCHing | flushout) > 0);
-    }
+    }*/
 
   return returnValue;
 }
