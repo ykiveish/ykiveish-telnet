@@ -2147,13 +2147,13 @@ telsnd (void)
 
 		if (tcc == 0) {
 			if (count) {
-				ring_consumed (&ttyiring, count);
+				// ring_consumed (&ttyiring, count); ykiveish
 				returnValue = 1;
 				count = 0;
 			}
 			
-			tbp = ttyiring.consume;
-			tcc = ring_full_consecutive (&ttyiring);
+			//tbp = ttyiring.consume; ykiveish
+			//tcc = ring_full_consecutive (&ttyiring); ykiveish
 			if (tcc == 0) {
 				break;
 			}

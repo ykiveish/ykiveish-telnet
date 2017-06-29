@@ -66,6 +66,8 @@
 			}
 //#define TTYBYTES()	(ring_full_count(&ttyoring))
 //#define TTYROOM()	(ring_empty_count(&ttyoring))
+#define TTYBYTES() (ring_full_count(&netoring))
+#define TTYROOM() (ring_full_count(&netoring))
 
 /*	Various modes */
 #define MODE_LOCAL_CHARS(m)	((m)&(MODE_EDIT|MODE_TRAPSIG))
