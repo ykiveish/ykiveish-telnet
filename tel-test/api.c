@@ -16,17 +16,33 @@
 #include "defines.h"
 #include "externs.h"
 
-Ring apioring, apiiring;
-unsigned char apiobuf[2 * BUFSIZ], apiibuf[BUFSIZ];
+Ring apiiring;
+unsigned char apiibuf[2 * BUFSIZ];
 unsigned char network_data_arrived;
 
 void
 init_api (void) {
-	if (ring_init (&apioring, apiobuf, sizeof apiobuf) != 1) {
-		exit (EXIT_FAILURE);
-	} 
-
 	if (ring_init (&apiiring, apiibuf, sizeof apiibuf) != 1) {
 		exit (EXIT_FAILURE);
 	}
+}
+
+void
+set_terminal_enabled (char value) {
+	is_terminal_enabled = value;
+}
+
+void
+set_data_arrived_handler (Callback value) {
+	onDataArrived = value;
+}
+
+void
+send_buffer (char * buff, int size) {
+
+}
+
+void
+connect_server () {
+
 }

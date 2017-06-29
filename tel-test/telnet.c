@@ -170,11 +170,6 @@ unsigned char is_terminal_enabled = FALSE;
 
 Clocks clocks;
 
-void
-set_terminal_enabled (char value) {
-	is_terminal_enabled = value;
-}
-
 /*
  * Initialize telnet environment.
  */
@@ -2366,11 +2361,6 @@ Scheduler (int block) {
 	}
 	
 	return returnValue;
-}
-
-void
-set_data_arrived_handler (Callback value) {
-	onDataArrived = value;
 }
 
 /*
